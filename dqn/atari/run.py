@@ -14,7 +14,7 @@ from mushroom.utils.parameters import LinearDecayParameter, Parameter
 sys.path.append('..')
 sys.path.append('../..')
 from dqn import DoubleDQN, DQN
-from policy import BootPolicy, WeightedPolicy
+from policy import BootPolicy, WeightedPolicy, VPIPolicy
 from net import ConvNet
 
 
@@ -143,7 +143,7 @@ def experiment():
 
         # Policy
         epsilon_test = Parameter(value=args.test_exploration_rate)
-        pi = BootPolicy(args.n_approximators, epsilon=epsilon_test)
+        pi = VPIPolicy(args.n_approximators, epsilon=epsilon_test)
 
         # Approximator
         input_shape = (args.screen_height, args.screen_width,
@@ -229,7 +229,7 @@ def experiment():
         epsilon_random = Parameter(value=1.)
 
         if not args.weighted:
-            pi = BootPolicy(args.n_approximators, epsilon=epsilon_random)
+            pi = VPIPolicy(args.n_approximators, epsilon=epsilon_random)
         else:
             pi = WeightedPolicy(args.n_approximators, epsilon=epsilon_random)
 
