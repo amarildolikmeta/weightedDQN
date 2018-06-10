@@ -58,10 +58,23 @@ class DQN(Agent):
             state, action, reward, next_state, absorbing, _, mask =\
                 self._replay_memory.get(self._batch_size)
 
+            q = np.array(self.approximator.predict(state))[0]
+            q = q.reshape((self._n_approximators * self._batch_size, -1))
+            q = q[np.arange(self._n_approximators * self._batch_size),
+                  np.tile(action.ravel(), self._n_approximators)]
+            q = q.reshape((self._n_approximators, self._batch_size)).T
+
+            idxs = q.argsort()
+
             if self._clip_reward:
                 reward = np.clip(reward, -1, 1)
 
             q_next = self._next_q(next_state, absorbing)
+            q_next_ordered = np.sort(q_next)
+
+            for i in range(idxs.shape[0]):
+                q_next[i] = q_next_ordered[i, idxs[i]]
+
             q = reward.reshape(self._batch_size,
                                1) + self.mdp_info.gamma * q_next
 
@@ -150,26 +163,3 @@ class DoubleDQN(DQN):
 
         return double_q.T
 
-
-class WeightedDQN(DQN):
-    """
-    ...
-
-    """
-    def _next_q(self, next_state, absorbing):
-        q = np.array(self.approximator.predict(next_state))[0]
-        tq = np.array(self.target_approximator.predict(next_state))[0]
-        for i in range(tq.shape[1]):
-            if absorbing[i]:
-                tq[:, i, :] *= 1. - absorbing[i]
-
-        W = np.zeros((next_state.shape[0], self._n_approximators))
-        for i in range(W.shape[0]):
-            max_a = np.argmax(q[:, i, :], axis=1)
-            max_idx, max_count = np.unique(max_a, return_counts=True)
-            count = np.zeros(self.mdp_info.action_space.n)
-            count[max_idx] = max_count
-            w = count / float(self._n_approximators)
-            W[i] = np.dot(tq[:, i, :], w)
-
-        return W
