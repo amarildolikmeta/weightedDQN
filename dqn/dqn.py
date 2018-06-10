@@ -50,8 +50,7 @@ class DQN(Agent):
         super(DQN, self).__init__(policy, mdp_info)
 
     def fit(self, dataset):
-        mask = np.random.binomial(1, self._p_mask,
-                                  size=(len(dataset),
+        mask = np.ones((len(dataset),
                                         self._n_approximators))
         self._replay_memory.add(dataset, mask)
         if self._replay_memory.initialized:
@@ -77,11 +76,7 @@ class DQN(Agent):
 
             q = reward.reshape(self._batch_size,
                                1) + self.mdp_info.gamma * q_next
-            #perform  one update for each head
-            for i in range(q.shape[1]):
-                m=np.zeros(q.shape)
-                m[:, i]=1
-                self.approximator.fit(state, action, q, mask=m,
+            self.approximator.fit(state, action, q, mask=mask,
                                   **self._fit_params)
 
             self._n_updates += 1
