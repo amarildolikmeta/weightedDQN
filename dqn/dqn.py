@@ -71,14 +71,17 @@ class DQN(Agent):
 
             q_next = self._next_q(next_state, absorbing)
             q_next_ordered = np.sort(q_next)
-
+            #order target values to match the source values
             for i in range(idxs.shape[0]):
-                q_next[i] = q_next_ordered[i, idxs[i]]
+                q_next[i, idxs[i]] = q_next_ordered[i]
 
             q = reward.reshape(self._batch_size,
                                1) + self.mdp_info.gamma * q_next
-
-            self.approximator.fit(state, action, q, mask=mask,
+            #perform  one update for each head
+            for i in range(q.shape[1]):
+                m=np.zeros(q.shape)
+                m[:, i]=1
+                self.approximator.fit(state, action, q, mask=m,
                                   **self._fit_params)
 
             self._n_updates += 1
@@ -110,10 +113,13 @@ class DQN(Agent):
         for i in range(q.shape[1]):
             if absorbing[i]:
                 q[:, i, :] *= 1. - absorbing[i]
-
-        max_q = np.max(q, axis=2)
-
-        return max_q.T
+        #find best actions
+        best_actions=np.argmax(np.mean(q,axis=0),axis=1)
+        max_q = np.zeros((q.shape[1], q.shape[0]))
+        for i in range(q.shape[1]):
+            max_q[i, :]=q[:, i, best_actions[i]]
+        
+        return max_q
 
     def draw_action(self, state):
         self._buffer.add(state)

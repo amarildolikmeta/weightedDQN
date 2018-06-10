@@ -13,7 +13,7 @@ from mushroom.utils.parameters import LinearDecayParameter, Parameter
 
 sys.path.append('..')
 sys.path.append('../..')
-from dqn import DoubleDQN
+from dqn import DoubleDQN, DQN
 from policy import BootPolicy, WeightedPolicy
 from net import ConvNet
 
@@ -139,6 +139,7 @@ def experiment():
     if args.load_path:
         mdp = Atari(args.name, args.screen_width, args.screen_height,
                     ends_at_life=False)
+        print("Evaluation Run")
 
         # Policy
         epsilon_test = Parameter(value=args.test_exploration_rate)
@@ -177,7 +178,7 @@ def experiment():
             p_mask=args.p_mask,
             dtype=np.uint8,
         )
-        agent = DoubleDQN(approximator, pi, mdp.info,
+        agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
 
@@ -192,7 +193,7 @@ def experiment():
         get_stats(dataset)
     else:
         # DQN learning run
-
+        print("Learning Run")
         policy_name = 'weighted' if args.weighted else 'boot'
 
         # Summary folder
@@ -265,7 +266,7 @@ def experiment():
             dtype=np.uint8,
         )
 
-        agent = DoubleDQN(approximator, pi, mdp.info,
+        agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
 
