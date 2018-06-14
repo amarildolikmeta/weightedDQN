@@ -213,7 +213,7 @@ class QSPolicy(BootPolicy):
         def update_epsilon(self, state):
             pass
             
-def get_2_best_actions(self, A):
+def get_2_best_actions( A):
     max1=np.argmax(A[0:2])
     max2=np.argmin(A[0:2])
     if max2==max1 :
@@ -226,7 +226,7 @@ def get_2_best_actions(self, A):
             max2=i
     return max1, max2
         
-def getMax(self, V):
+def getMax( V):
     #brake ties
     maximums=np.where(V==np.max(V))[0]
     return np.random.choice(maximums)

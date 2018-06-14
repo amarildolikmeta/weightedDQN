@@ -120,7 +120,7 @@ def experiment():
     arg_utils = parser.add_argument_group('Utils')
     arg_utils.add_argument('--load-path', type=str,
                            help='Path of the model to be loaded.')
-    arg_utils.add_argument('--save', action='store_true',
+    arg_utils.add_argument('--save', action='storeWeighted_true',
                            help='Flag specifying whether to save the model.')
     arg_utils.add_argument('--render', action='store_true',
                            help='Flag specifying whether to render the game.')
@@ -229,9 +229,9 @@ def experiment():
         epsilon_random = Parameter(value=1.)
 
         if not args.q_sampling:
-            pi = QSPolicy(args.n_approximators, epsilon=epsilon_random)
-        else:
             pi = VPIPolicy(args.n_approximators, epsilon=epsilon_random)
+        else:
+            pi = QSPolicy(args.n_approximators, epsilon=epsilon_random)
 
         # Approximator
         input_shape = (args.screen_height, args.screen_width,
