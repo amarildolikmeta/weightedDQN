@@ -78,7 +78,7 @@ def experiment():
     arg_net.add_argument("--epsilon", type=float, default=1e-10)
 
     arg_alg = parser.add_argument_group('Algorithm')
-    arg_alg.add_argument("--q-sampling", action='store_true')
+    arg_alg.add_argument("--weighted", action='store_true')
     arg_alg.add_argument("--n-approximators", type=int, default=10,
                          help="Number of approximators used in the ensemble for"
                               "Averaged DQN.")
@@ -120,7 +120,7 @@ def experiment():
     arg_utils = parser.add_argument_group('Utils')
     arg_utils.add_argument('--load-path', type=str,
                            help='Path of the model to be loaded.')
-    arg_utils.add_argument('--save', action='storeWeighted_true',
+    arg_utils.add_argument('--save', action='store_true',
                            help='Flag specifying whether to save the model.')
     arg_utils.add_argument('--render', action='store_true',
                            help='Flag specifying whether to render the game.')
@@ -194,7 +194,7 @@ def experiment():
     else:
         # DQN learning run
         print("Learning Run")
-        policy_name = 'q_sampling' if args.q_sampling else 'VPI'
+        policy_name = 'weighted' if args.weighted else 'boot'
 
         # Summary folder
         folder_name = './logs/' + policy_name + '/' + args.name
@@ -228,7 +228,7 @@ def experiment():
         epsilon_test = Parameter(value=args.test_exploration_rate)
         epsilon_random = Parameter(value=1.)
 
-        if not args.q_sampling:
+        if not args.weighted:
             pi = VPIPolicy(args.n_approximators, epsilon=epsilon_random)
         else:
             pi = QSPolicy(args.n_approximators, epsilon=epsilon_random)

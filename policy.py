@@ -194,9 +194,8 @@ class QSPolicy(BootPolicy):
                 else:
                     q = self._approximator.predict(state)
                     q=q.reshape(q.shape[0], q.shape[2])
-                    N=q.shape[0]
                     num_actions=q.shape[1]
-                    samples=np.zeros(N)
+                    samples=np.zeros(num_actions)
                     for i in range(num_actions):
                         samples[i]=np.random.choice(a=q[:, i])
                     return getMax(samples)
