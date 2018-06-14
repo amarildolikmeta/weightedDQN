@@ -88,8 +88,6 @@ def experiment():
                          help='Lower bound for initializing the heads of the network')
     arg_alg.add_argument("--batch-size", type=int, default=32,
                          help='Batch size for each fit of the network.')
-    arg_alg.add_argument("--batch-size", type=int, default=32,
-                         help='Batch size for each fit of the network.')
     arg_alg.add_argument("--history-length", type=int, default=4,
                          help='Number of frames composing a state.')
     arg_alg.add_argument("--target-update-frequency", type=int, default=10000,
