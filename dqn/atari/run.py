@@ -194,7 +194,7 @@ def experiment():
     else:
         # DQN learning run
         print("Learning Run")
-        policy_name = 'weighted' if args.weighted else 'boot'
+        policy_name = 'q_sampling' if args.q_sampling else 'VPI'
 
         # Summary folder
         folder_name = './logs/' + policy_name + '/' + args.name
