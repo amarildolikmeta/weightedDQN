@@ -14,7 +14,7 @@ from mushroom.utils.parameters import LinearDecayParameter, Parameter
 sys.path.append('..')
 sys.path.append('../..')
 from dqn import DoubleDQN, DQN
-from policy import BootPolicy, WeightedPolicy, VPIPolicy, QSPolicy
+from policy import BootPolicy, WeightedPolicy, VPIPolicy
 from net import ConvNet
 
 
@@ -82,6 +82,12 @@ def experiment():
     arg_alg.add_argument("--n-approximators", type=int, default=10,
                          help="Number of approximators used in the ensemble for"
                               "Averaged DQN.")
+    arg_alg.add_argument("--q-max", type=float, default=300,
+                         help='Upper bound for initializing the heads of the network')
+    arg_alg.add_argument("--q-min", type=float, default=0,
+                         help='Lower bound for initializing the heads of the network')
+    arg_alg.add_argument("--batch-size", type=int, default=32,
+                         help='Batch size for each fit of the network.')
     arg_alg.add_argument("--batch-size", type=int, default=32,
                          help='Batch size for each fit of the network.')
     arg_alg.add_argument("--history-length", type=int, default=4,
@@ -155,6 +161,8 @@ def experiment():
             n_approximators=args.n_approximators,
             name='test',
             load_path=args.load_path,
+            q_min=args.q_min, 
+            q_max=args.q_max, 
             optimizer={'name': args.optimizer,
                        'lr': args.learning_rate,
                        'decay': args.decay,
@@ -231,7 +239,7 @@ def experiment():
         if not args.weighted:
             pi = VPIPolicy(args.n_approximators, epsilon=epsilon_random)
         else:
-            pi = QSPolicy(args.n_approximators, epsilon=epsilon_random)
+            pi = WeightedPolicy(args.n_approximators, epsilon=epsilon_random)
 
         # Approximator
         input_shape = (args.screen_height, args.screen_width,
@@ -242,6 +250,8 @@ def experiment():
             n_actions=mdp.info.action_space.n,
             n_approximators=args.n_approximators,
             folder_name=folder_name,
+            q_min=args.q_min, 
+            q_max=args.q_max,
             optimizer={'name': args.optimizer,
                        'lr': args.learning_rate,
                        'decay': args.decay,

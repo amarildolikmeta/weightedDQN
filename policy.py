@@ -93,8 +93,6 @@ class WeightedPolicy(TDPolicy):
 
                 qs = np.array(q_list)
 
-                qs = ((qs.T - qs.mean(1)) / qs.std(1)).T
-
                 samples = np.ones(self._approximator.n_actions)
                 for a in range(self._approximator.n_actions):
                     idx = np.random.randint(self._n_approximators)
@@ -175,42 +173,7 @@ class VPIPolicy(BootPolicy):
         def update_epsilon(self, state):
             pass
 
-class QSPolicy(BootPolicy):
-        def draw_action(self, state):
-                if self._evaluation:
-                    if isinstance(self._approximator.model, list):
-                        q_list = list()
-                        for q in self._approximator.model:
-                            q_list.append(q.predict(state))
-                    else:
-                        q_list = self._approximator.predict(state).squeeze()
 
-                    max_as, count = np.unique(np.argmax(q_list, axis=1),
-                                          return_counts=True)
-                    max_a = np.array([max_as[np.random.choice(
-                        np.argwhere(count == np.max(count)).ravel())]])
-
-                    return max_a
-                else:
-                    q = self._approximator.predict(state)
-                    q=q.reshape(q.shape[0], q.shape[2])
-                    num_actions=q.shape[1]
-                    samples=np.zeros(num_actions)
-                    for i in range(num_actions):
-                        samples[i]=np.random.choice(a=q[:, i])
-                    return getMax(samples)
-              
-        def set_epsilon(self, epsilon):
-            pass
-            
-        def set_eval(self, eval):
-            self._evaluation = eval
-
-        def set_idx(self, idx):
-            pass
-
-        def update_epsilon(self, state):
-            pass
             
 def get_2_best_actions( A):
     max1=np.argmax(A[0:2])

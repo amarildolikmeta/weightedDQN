@@ -152,7 +152,10 @@ class ConvNet:
                     self._q.append(tf.layers.dense(
                         self._features[i],
                         convnet_pars['output_shape'][0],
-                        kernel_initializer=tf.glorot_uniform_initializer(),
+                        kernel_initializer=tf.zeros_initializer(),
+                        bias_initializer=tf.random_uniform_initializer(
+                                                            minval=[convnet_pars['q_min']]*convnet_pars['output_shape'][0], 
+                                                            maxval=[convnet_pars['q_max']]*convnet_pars['output_shape'][0]),
                         name='q_' + str(i)
                     ))
                     self._q_acted.append(
