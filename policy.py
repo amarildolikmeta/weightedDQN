@@ -143,7 +143,7 @@ class VPIPolicy(BootPolicy):
                     num_actions=q.shape[1]
                     means=np.mean(q, axis=0)
                     ranking=np.zeros(num_actions)
-                    best_action, second_best=self.get_2_best_actions(means)
+                    best_action, second_best=get_2_best_actions(means)
                     mean1=means[best_action]
                     mean2=means[second_best]
                     weights = 1/N
@@ -161,23 +161,73 @@ class VPIPolicy(BootPolicy):
                                 if particles[j]>=mean1:
                                     vpi+=(particles[j]-mean1)*weights
                             ranking[i]=vpi+mean
-                    return self.getMax(ranking)
-                
-        def get_2_best_actions(self, A):
-            max1=np.argmax(A[0:2])
-            max2=np.argmin(A[0:2])
-            if max2==max1 :
-                max2=(1-max1)%2
-            for i in range(2, len(A)):
-                if A[i]>=A[max1]:
-                    max2=max1
-                    max1=i
-                elif A[i]>=A[max2]:
-                    max2=i
-            return max1, max2
+                    return getMax(ranking)
+              
+        def set_epsilon(self, epsilon):
+            pass
+            
+        def set_eval(self, eval):
+            self._evaluation = eval
+
+        def set_idx(self, idx):
+            pass
+
+        def update_epsilon(self, state):
+            pass
+
+class QSPolicy(BootPolicy):
+        def draw_action(self, state):
+                if self._evaluation:
+                    if isinstance(self._approximator.model, list):
+                        q_list = list()
+                        for q in self._approximator.model:
+                            q_list.append(q.predict(state))
+                    else:
+                        q_list = self._approximator.predict(state).squeeze()
+
+                    max_as, count = np.unique(np.argmax(q_list, axis=1),
+                                          return_counts=True)
+                    max_a = np.array([max_as[np.random.choice(
+                        np.argwhere(count == np.max(count)).ravel())]])
+
+                    return max_a
+                else:
+                    q = self._approximator.predict(state)
+                    q=q.reshape(q.shape[0], q.shape[2])
+                    N=q.shape[0]
+                    num_actions=q.shape[1]
+                    samples=np.zeros(N)
+                    for i in range(num_actions):
+                        samples[i]=np.random.choice(a=q[:, i])
+                    return getMax(samples)
+              
+        def set_epsilon(self, epsilon):
+            pass
+            
+        def set_eval(self, eval):
+            self._evaluation = eval
+
+        def set_idx(self, idx):
+            pass
+
+        def update_epsilon(self, state):
+            pass
+            
+def get_2_best_actions(self, A):
+    max1=np.argmax(A[0:2])
+    max2=np.argmin(A[0:2])
+    if max2==max1 :
+        max2=(1-max1)%2
+    for i in range(2, len(A)):
+        if A[i]>=A[max1]:
+            max2=max1
+            max1=i
+        elif A[i]>=A[max2]:
+            max2=i
+    return max1, max2
         
-        def getMax(self, V):
-            #brake ties
-            maximums=np.where(V==np.max(V))[0]
-            return np.random.choice(maximums)
+def getMax(self, V):
+    #brake ties
+    maximums=np.where(V==np.max(V))[0]
+    return np.random.choice(maximums)
     
