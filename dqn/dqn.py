@@ -57,7 +57,7 @@ class DQN(Agent):
             state, action, reward, next_state, absorbing, _, mask =\
                 self._replay_memory.get(self._batch_size)
 
-            q = np.array(self.target_approximator.predict(state))[0]
+            q = np.array(self.approximator.predict(state))[0]
             q = q.reshape((self._n_approximators * self._batch_size, -1))
             q = q[np.arange(self._n_approximators * self._batch_size),
                   np.tile(action.ravel(), self._n_approximators)]
