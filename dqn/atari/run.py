@@ -86,7 +86,7 @@ def experiment():
                              choices=['squared_loss',
                                   'huber_loss',
                                   ],
-                         default='squared',
+                         default='squared_loss',
                          help="Loss functions used in the approximator")
     arg_alg.add_argument("--q-max", type=float, default=300,
                          help='Upper bound for initializing the heads of the network')
