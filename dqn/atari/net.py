@@ -143,7 +143,11 @@ class ConvNet:
             self._features = list()
             self._q = list()
             self._q_acted = list()
-            for i in range(convnet_pars['n_approximators']):
+            self.n_approximators=convnet_pars['n_approximators']
+            self.q_min=convnet_pars['q_min']
+            self.q_max=convnet_pars['q_max']
+            for i in range(self.n_approximators):
+                
                 with tf.variable_scope('head_' + str(i)):
                     self._features.append(tf.layers.dense(
                         identity, 512, activation=tf.nn.relu,
@@ -154,9 +158,9 @@ class ConvNet:
                         self._features[i],
                         convnet_pars['output_shape'][0],
                         kernel_initializer=tf.zeros_initializer(),
-                        bias_initializer=tf.random_uniform_initializer(
-                                                            minval=[convnet_pars['q_min']]*convnet_pars['output_shape'][0], 
-                                                            maxval=[convnet_pars['q_max']]*convnet_pars['output_shape'][0]),
+                        bias_initializer=tf.constant_initializer(
+                                                           [self.q_min+(i*(self.q_max-self.q_min))/self.n_approximators-1]*convnet_pars['output_shape'][0], 
+                                                            ),
                         name='q_' + str(i)
                     ))
                     self._q_acted.append(
@@ -171,12 +175,16 @@ class ConvNet:
                 name='target_q'
             )
             loss = 0.
+            if convnet_pars["loss"]=="huber_loss":
+                self.loss_fuction=tf.losses.huber_loss
+            else :
+                self.loss_fuction=tf.losses.mean_squared_error
             for i in range(convnet_pars['n_approximators']):
-                loss += tf.losses.huber_loss(
+                loss += self.loss_fuction(
                     self._mask[:, i] * self._target_q[:, i],
                     self._mask[:, i] * self._q_acted[i]
-                )
-            tf.summary.scalar('huber_loss', loss)
+            )
+            tf.summary.scalar(convnet_pars["loss"], loss)
             tf.summary.scalar('average_q', tf.reduce_mean(self._q))
             self._merged = tf.summary.merge(
                 tf.get_collection(tf.GraphKeys.SUMMARIES,

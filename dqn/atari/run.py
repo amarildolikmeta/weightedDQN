@@ -82,6 +82,12 @@ def experiment():
     arg_alg.add_argument("--n-approximators", type=int, default=10,
                          help="Number of approximators used in the ensemble for"
                               "Averaged DQN.")
+    arg_alg.add_argument("--loss", 
+                             choices=['squared_loss',
+                                  'huber_loss',
+                                  ],
+                         default='squared',
+                         help="Loss functions used in the approximator")
     arg_alg.add_argument("--q-max", type=float, default=300,
                          help='Upper bound for initializing the heads of the network')
     arg_alg.add_argument("--q-min", type=float, default=0,
@@ -164,7 +170,8 @@ def experiment():
             optimizer={'name': args.optimizer,
                        'lr': args.learning_rate,
                        'decay': args.decay,
-                       'epsilon': args.epsilon}
+                       'epsilon': args.epsilon},
+            loss=args.loss
         )
 
         approximator = ConvNet
@@ -182,7 +189,7 @@ def experiment():
             max_no_op_actions=4,
             no_op_action_value=args.no_op_action_value,
             p_mask=args.p_mask,
-            dtype=np.uint8,
+            dtype=np.uint8
         )
         agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
@@ -200,10 +207,10 @@ def experiment():
     else:
         # DQN learning run
         print("Learning Run")
-        policy_name = 'weighted' if args.weighted else 'boot'
+        policy_name = 'weighted' if args.weighted else 'vpi'
 
         # Summary folder
-        folder_name = './logs/' + policy_name + '/' + args.name
+        folder_name = './logs/' + policy_name + '/' + args.name+"/"+args.loss+"/"+args.n_approximators+"_particles"
 
         # Settings
         if args.debug:
@@ -250,6 +257,7 @@ def experiment():
             folder_name=folder_name,
             q_min=args.q_min, 
             q_max=args.q_max,
+            loss=args.loss, 
             optimizer={'name': args.optimizer,
                        'lr': args.learning_rate,
                        'decay': args.decay,
@@ -271,7 +279,7 @@ def experiment():
             max_no_op_actions=args.max_no_op_actions,
             no_op_action_value=args.no_op_action_value,
             p_mask=args.p_mask,
-            dtype=np.uint8,
+            dtype=np.uint8
         )
 
         agent = DQN(approximator, pi, mdp.info,
