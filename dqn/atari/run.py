@@ -210,7 +210,7 @@ def experiment():
         policy_name = 'weighted' if args.weighted else 'vpi'
 
         # Summary folder
-        folder_name = './logs/' + policy_name + '/' + args.name+"/"+args.loss+"/"+args.n_approximators+"_particles"
+        folder_name = './logs/' + policy_name + '/' + args.name+"/"+args.loss+"/"+str(args.n_approximators)+"_particles"
 
         # Settings
         if args.debug:
