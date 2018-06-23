@@ -1,7 +1,9 @@
 import argparse
 import os
 import sys
-
+sys.path.append('..')
+sys.path.append('../..')
+from dqn import  DQN
 from joblib import Parallel, delayed
 import numpy as np
 import tensorflow as tf
@@ -11,9 +13,7 @@ from mushroom.environments import Atari
 from mushroom.utils.dataset import compute_scores
 from mushroom.utils.parameters import LinearDecayParameter, Parameter
 
-sys.path.append('..')
-sys.path.append('../..')
-from dqn import DoubleDQN, DQN
+
 from policy import BootPolicy, WeightedPolicy, VPIPolicy
 from net import ConvNet
 
@@ -79,6 +79,7 @@ def experiment():
 
     arg_alg = parser.add_argument_group('Algorithm')
     arg_alg.add_argument("--weighted", action='store_true')
+    arg_alg.add_argument("--weighted-update", action='store_true')
     arg_alg.add_argument("--n-approximators", type=int, default=10,
                          help="Number of approximators used in the ensemble for"
                               "Averaged DQN.")
@@ -189,12 +190,14 @@ def experiment():
             max_no_op_actions=4,
             no_op_action_value=args.no_op_action_value,
             p_mask=args.p_mask,
-            dtype=np.uint8
+            dtype=np.uint8, 
+            weighted_update=args.weighted_update
         )
         agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
-
+        print(agent)
+        input("press")
         # Algorithm
         core_test = Core(agent, mdp)
 
@@ -208,9 +211,9 @@ def experiment():
         # DQN learning run
         print("Learning Run")
         policy_name = 'weighted' if args.weighted else 'vpi'
-
+        update_rule = 'weighted_update' if args.weighted_update else 'max_mean_update'
         # Summary folder
-        folder_name = './logs/' + policy_name + '/' + args.name+"/"+args.loss+"/"+str(args.n_approximators)+"_particles"
+        folder_name = './logs/' + policy_name + '/' +update_rule+'/'+ args.name+"/"+args.loss+"/"+str(args.n_approximators)+"_particles"
 
         # Settings
         if args.debug:
@@ -279,13 +282,14 @@ def experiment():
             max_no_op_actions=args.max_no_op_actions,
             no_op_action_value=args.no_op_action_value,
             p_mask=args.p_mask,
-            dtype=np.uint8
-        )
+            dtype=np.uint8, 
+            weighted_update=args.weighted_update
+            )
 
         agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
-
+        agent.print_info()
         # Algorithm
         core = Core(agent, mdp)
 

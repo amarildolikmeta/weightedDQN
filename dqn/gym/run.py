@@ -76,6 +76,7 @@ def experiment(policy, name, folder_name):
                          help='Epsilon term used in rmspropcentered')
 
     arg_alg = parser.add_argument_group('Algorithm')
+    arg_alg.add_argument("--weighted-update", action='store_true')
     arg_alg.add_argument("--n-approximators", type=int, default=10,
                          help="Number of approximators used in the ensemble for"
                               "Averaged DQN.")
@@ -181,7 +182,8 @@ def experiment(policy, name, folder_name):
             target_update_frequency=1,
             max_no_op_actions=args.max_no_op_actions,
             no_op_action_value=args.no_op_action_value,
-            p_mask=args.p_mask
+            p_mask=args.p_mask, 
+            weighted_update=args.weighted_update
         )
         agent = DoubleDQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
@@ -273,7 +275,8 @@ def experiment(policy, name, folder_name):
             target_update_frequency=target_update_frequency,
             max_no_op_actions=args.max_no_op_actions,
             no_op_action_value=args.no_op_action_value,
-            p_mask=args.p_mask
+            p_mask=args.p_mask, 
+            weighted_update=args.weighted_update
         )
 
         agent = DoubleDQN(approximator, pi, mdp.info,

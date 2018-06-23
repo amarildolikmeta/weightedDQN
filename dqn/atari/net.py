@@ -159,7 +159,7 @@ class ConvNet:
                         convnet_pars['output_shape'][0],
                         kernel_initializer=tf.zeros_initializer(),
                         bias_initializer=tf.constant_initializer(
-                                                           [self.q_min+(i*(self.q_max-self.q_min))/self.n_approximators-1]*convnet_pars['output_shape'][0], 
+                                                           [self.q_min+(i*(self.q_max-self.q_min))/(self.n_approximators-1)]*convnet_pars['output_shape'][0], 
                                                             ),
                         name='q_' + str(i)
                     ))
