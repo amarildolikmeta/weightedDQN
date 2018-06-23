@@ -197,7 +197,6 @@ def experiment():
                           approximator_params=approximator_params,
                           **algorithm_params)
         print(agent)
-        input("press")
         # Algorithm
         core_test = Core(agent, mdp)
 
@@ -289,7 +288,6 @@ def experiment():
         agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
-        agent.print_info()
         # Algorithm
         core = Core(agent, mdp)
 
