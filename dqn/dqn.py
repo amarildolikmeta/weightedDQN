@@ -51,8 +51,9 @@ class DQN(Agent):
 
     def fit(self, dataset):
         
-        mask = np.ones((len(dataset),
-                                        self._n_approximators))
+        mask = np.random.binomial(1, self._p_mask,
+                                  size=(len(dataset),
+                                            self._n_approximators))
         self._replay_memory.add(dataset, mask)
         if self._replay_memory.initialized:
             state, action, reward, next_state, absorbing, _, mask =\
@@ -162,7 +163,6 @@ class DQN(Agent):
             action = super(DQN, self).draw_action(extended_state)
 
         self._episode_steps += 1
-
         return action
 
     def episode_start(self):

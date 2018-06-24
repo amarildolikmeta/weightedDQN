@@ -19,7 +19,6 @@ class Buffer(object):
         """
         self._size = size
         self._dtype = dtype
-
         self._buf = [None] * self._size
 
     def add(self, sample):
