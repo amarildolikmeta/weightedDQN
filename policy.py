@@ -77,7 +77,7 @@ class WeightedPolicy(TDPolicy):
                 else:
                     q_list = self._approximator.predict(state).squeeze()
 
-                means=np.mean(q_list, axis=1)
+                means=np.mean(q_list, axis=0)
                 return np.random.choice(np.where(means==np.max(means))[0])
             else:
                 if isinstance(self._approximator.model, list):
@@ -124,7 +124,7 @@ class VPIPolicy(BootPolicy):
                     else:
                         q_list = self._approximator.predict(state).squeeze()
                     
-                    means=np.mean(q_list, axis=1)
+                    means=np.mean(q_list, axis=0)
                     return np.random.choice(np.where(means==np.max(means))[0])
                 else:
                     q = self._approximator.predict(state)
