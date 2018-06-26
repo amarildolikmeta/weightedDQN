@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append('..')
 sys.path.append('../..')
-from dqn import  DQN
+from dqn import  DQN, DoubleDQN
 from joblib import Parallel, delayed
 import numpy as np
 import tensorflow as tf
@@ -193,7 +193,7 @@ def experiment():
             dtype=np.uint8, 
             weighted_update=args.weighted_update
         )
-        agent = DQN(approximator, pi, mdp.info,
+        agent = DoubleDQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
         print(agent)
@@ -285,7 +285,7 @@ def experiment():
             weighted_update=args.weighted_update
             )
 
-        agent = DQN(approximator, pi, mdp.info,
+        agent = DoubleDQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
         # Algorithm

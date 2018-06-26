@@ -188,13 +188,9 @@ class DoubleDQN(DQN):
         for i in range(q.shape[1]):
             if absorbing[i]:
                 tq[:, i, :] *= 1. - absorbing[i]
-
-        max_a = np.argmax(q, axis=2)
-
-        double_q = np.zeros(q.shape[:2])
-        for i in range(double_q.shape[0]):
-            for j in range(double_q.shape[1]):
-                double_q[i, j] = tq[i, j, max_a[i, j]]
-
-        return double_q.T
+        best_actions=np.argmax(np.mean(q,axis=0),axis=1)
+        double_q = np.zeros((q.shape[1], q.shape[0]))
+        for i in range(q.shape[1]):
+            double_q[i, :]=tq[:, i, best_actions[i]]
+        return double_q
 
