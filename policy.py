@@ -112,7 +112,7 @@ class WeightedPolicy(TDPolicy):
 
 class VPIPolicy(BootPolicy):
         def draw_action(self, state):
-            if not np.random.uniform() < self._epsilon(state):
+            if True:#not np.random.uniform() < self._epsilon(state):
                 if self._evaluation:
                     if isinstance(self._approximator.model, list):
                         q_list = list()
