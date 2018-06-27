@@ -15,7 +15,7 @@ class BootPolicy(TDPolicy):
         self._epsilon = epsilon
         self._evaluation = False
         self._idx = None
-
+        self.count=0
     def draw_action(self, state):
         if not np.random.uniform() < self._epsilon(state):
             if self._evaluation:
@@ -153,7 +153,7 @@ class VPIPolicy(BootPolicy):
                     return np.array([np.random.choice(self._approximator.n_actions)])
 
         def set_epsilon(self, epsilon):
-            pass
+            self._epsilon=epsilon
             
         def set_eval(self, eval):
             self._evaluation = eval
