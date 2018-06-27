@@ -162,7 +162,7 @@ class ConvNet:
                                                            [self.q_min+(i*(self.q_max-self.q_min))/(self.n_approximators-1)]*convnet_pars['output_shape'][0], 
                                                             ),
                         name='q_' + str(i)
-                    ))
+))
                     self._q_acted.append(
                         tf.reduce_sum(self._q[i] * action_one_hot,
                                       axis=1,

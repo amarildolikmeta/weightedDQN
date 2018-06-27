@@ -193,10 +193,9 @@ def experiment():
             dtype=np.uint8, 
             weighted_update=args.weighted_update
         )
-        agent = DoubleDQN(approximator, pi, mdp.info,
+        agent =DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
-        print(agent)
         # Algorithm
         core_test = Core(agent, mdp)
 
@@ -285,7 +284,7 @@ def experiment():
             weighted_update=args.weighted_update
             )
 
-        agent = DoubleDQN(approximator, pi, mdp.info,
+        agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
         # Algorithm
