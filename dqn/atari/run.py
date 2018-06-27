@@ -76,9 +76,13 @@ def experiment():
                               'in rmspropcentered')
     arg_net.add_argument("--decay", type=float, default=.95)
     arg_net.add_argument("--epsilon", type=float, default=1e-10)
+    arg_net.add_argument("--bootInit", action='store_true',
+                         help='Initialize weights as in Bootstrapped DQN')
 
+    
     arg_alg = parser.add_argument_group('Algorithm')
     arg_alg.add_argument("--weighted", action='store_true')
+    arg_alg.add_argument("--double", action='store_true')
     arg_alg.add_argument("--weighted-update", action='store_true')
     arg_alg.add_argument("--n-approximators", type=int, default=10,
                          help="Number of approximators used in the ensemble for"
@@ -193,7 +197,12 @@ def experiment():
             dtype=np.uint8, 
             weighted_update=args.weighted_update
         )
-        agent =DQN(approximator, pi, mdp.info,
+        if args.double:
+            agent = DoubleDQN(approximator, pi, mdp.info,
+                          approximator_params=approximator_params,
+                          **algorithm_params)
+        else:
+            agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
         # Algorithm
@@ -283,8 +292,13 @@ def experiment():
             dtype=np.uint8, 
             weighted_update=args.weighted_update
             )
-
-        agent = DQN(approximator, pi, mdp.info,
+        
+        if args.double:
+            agent = DoubleDQN(approximator, pi, mdp.info,
+                          approximator_params=approximator_params,
+                          **algorithm_params)
+        else:
+            agent = DQN(approximator, pi, mdp.info,
                           approximator_params=approximator_params,
                           **algorithm_params)
         # Algorithm
