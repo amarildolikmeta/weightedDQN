@@ -50,7 +50,7 @@ def experiment():
     arg_game = parser.add_argument_group('Game')
     arg_game.add_argument("--name",
                           type=str,
-                          default='BreakoutDeterministic-v4',
+                          default='BreakoutNoFrameskip-v4',
                           help='Gym ID of the Atari game.')
     arg_game.add_argument("--screen-width", type=int, default=84,
                           help='Width of the game screen.')
