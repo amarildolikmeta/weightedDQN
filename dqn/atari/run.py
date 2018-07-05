@@ -222,7 +222,7 @@ def experiment():
         policy_name = 'weighted' if args.weighted else 'vpi'
         update_rule = 'weighted_update' if args.weighted_update else 'max_mean_update'
         # Summary folder
-        folder_name = './logs/' + str(args.experiment_number)+ policy_name + '/' +update_rule+'/'+ args.name+"/"+args.loss+"/"+str(args.n_approximators)+"_particles"
+        folder_name = './logs/' + str(args.experiment_number)+'/'+ policy_name + '/' +update_rule+'/'+ args.name+"/"+args.loss+"/"+str(args.n_approximators)+"_particles"
 
         # Settings
         if args.debug:
