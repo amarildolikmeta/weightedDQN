@@ -133,6 +133,8 @@ def experiment():
     arg_alg.add_argument("--p-mask", type=float, default=1.)
 
     arg_utils = parser.add_argument_group('Utils')
+    arg_utils.add_argument('--experiment-number', type=int,default=1, 
+                           help='To differentiate experiment results')
     arg_utils.add_argument('--load-path', type=str,
                            help='Path of the model to be loaded.')
     arg_utils.add_argument('--save', action='store_true',
@@ -220,7 +222,7 @@ def experiment():
         policy_name = 'weighted' if args.weighted else 'vpi'
         update_rule = 'weighted_update' if args.weighted_update else 'max_mean_update'
         # Summary folder
-        folder_name = './logs/' + policy_name + '/' +update_rule+'/'+ args.name+"/"+args.loss+"/"+str(args.n_approximators)+"_particles"
+        folder_name = './logs/' + args.experiment_number+ policy_name + '/' +update_rule+'/'+ args.name+"/"+args.loss+"/"+str(args.n_approximators)+"_particles"
 
         # Settings
         if args.debug:
