@@ -93,9 +93,9 @@ def experiment():
                                   ],
                          default='squared_loss',
                          help="Loss functions used in the approximator")
-    arg_alg.add_argument("--q-max", type=float, default=300,
+    arg_alg.add_argument("--q-max", type=float, default=10,
                          help='Upper bound for initializing the heads of the network')
-    arg_alg.add_argument("--q-min", type=float, default=0,
+    arg_alg.add_argument("--q-min", type=float, default=-10,
                          help='Lower bound for initializing the heads of the network')
     arg_alg.add_argument("--batch-size", type=int, default=32,
                          help='Batch size for each fit of the network.')
