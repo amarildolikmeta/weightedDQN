@@ -54,7 +54,7 @@ def experiment(n_approximators, policy, agent_alg):
 
 
 if __name__ == '__main__':
-    n_experiment = 10
+    n_experiment = 100
     n_approximators = 32
     env="Taxi"
     policy_name = {VPIPolicy: 'VPI', WeightedPolicy: 'Weighted'}
