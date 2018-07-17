@@ -58,7 +58,7 @@ class PVFWeightedLearning(PVF):
     def _update(self, state, action, reward, next_state, absorbing):
         alpha=self.alpha(state, action)
         q_current = np.array([x[state, action] for x in self.Q.model])
-        N=self.Q.model[0].shape[0]
+        N=len(self.Q.model)
         num_actions=self.Q.model[0].shape[1]
         probs=np.zeros(num_actions)
         weights = 1/N
