@@ -26,8 +26,11 @@ class BootPolicy(TDPolicy):
                 else:
                     q_list = self._approximator.predict(state).squeeze()
 
-                means=np.mean(q_list, axis=0)
-                return np.random.choice(np.where(means==np.max(means))[0])
+                max_as, count = np.unique(np.argmax(q_list, axis=1),
+                                          return_counts=True)
+                max_a = np.array([max_as[np.random.choice(
+                    np.argwhere(count == np.max(count)).ravel())]])
+                return max_a
             else:
                 q = self._approximator.predict(state, idx=self._idx)
                 
@@ -124,8 +127,13 @@ class VPIPolicy(BootPolicy):
                     means=np.mean(q_list, axis=0)
                     return np.random.choice(np.where(means==np.max(means))[0])
                 else:
-                    q = self._approximator.predict(state)
-                    q=q.reshape(q.shape[0], q.shape[2])
+                    if isinstance(self._approximator.model, list):
+                        q_list = list()
+                        for i in range(self._n_approximators):
+                            q_list.append(self._approximator.predict(state, idx=i))
+                        q=np.array(q_list)
+                    else:
+                        q = self._approximator.predict(state).squeeze()
                     N=q.shape[0]
                     num_actions=q.shape[1]
                     means=np.mean(q, axis=0)
@@ -148,7 +156,7 @@ class VPIPolicy(BootPolicy):
                                 if particles[j]>=mean1:
                                     vpi+=(particles[j]-mean1)*weights
                             ranking[i]=vpi+mean
-                    return getMax(ranking)
+                    return np.array([getMax(ranking)])
             else:
                     return np.array([np.random.choice(self._approximator.n_actions)])
 

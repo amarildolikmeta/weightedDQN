@@ -37,10 +37,12 @@ class ConvNet:
         if idx is not None:
             return self._session.run(self._q[idx], feed_dict={self._x: s})
         else:
+            prediction=np.array(self._session.run(self._q, feed_dict={self._x: s})).T.tolist()
             return np.array(
-                [self._session.run(self._q, feed_dict={self._x: s})])
+                            [prediction])
 
     def fit(self, s, a, q, mask):
+        
         summaries, _ = self._session.run(
             [self._merged, self._train_step],
             feed_dict={self._x: s,
@@ -146,7 +148,7 @@ class ConvNet:
             self.n_approximators=convnet_pars['n_approximators']
             self.q_min=convnet_pars['q_min']
             self.q_max=convnet_pars['q_max']
-            for i in range(self.n_approximators):
+            for i in range(convnet_pars['output_shape'][0]):
                 
                 with tf.variable_scope('head_' + str(i)):
                     self._features.append(tf.layers.dense(
@@ -156,16 +158,16 @@ class ConvNet:
                     ))
                     self._q.append(tf.layers.dense(
                         self._features[i],
-                        convnet_pars['output_shape'][0],
+                        self.n_approximators,
                         kernel_initializer=tf.glorot_uniform_initializer(),
                         name='q_' + str(i)
 ))
-                    self._q_acted.append(
-                        tf.reduce_sum(self._q[i] * action_one_hot,
-                                      axis=1,
-                                      name='q_acted_' + str(i))
-                    )
-
+            transposed_action_one_hot=tf.transpose(action_one_hot)
+            for i in range(self.n_approximators):
+                l=[self._q[j][:, i] for j in range(len(self._q))]
+                self._q_acted.append(tf.reduce_sum(l* transposed_action_one_hot,
+                                      axis=0,
+name='q_acted_' + str(i)))
             self._target_q = tf.placeholder(
                 'float32',
                 [None, convnet_pars['n_approximators']],
@@ -176,6 +178,7 @@ class ConvNet:
                 self.loss_fuction=tf.losses.huber_loss
             else :
                 self.loss_fuction=tf.losses.mean_squared_error
+
             for i in range(convnet_pars['n_approximators']):
                 loss += self.loss_fuction(
                     self._mask[:, i] * self._target_q[:, i],
@@ -230,6 +233,7 @@ class ConvNet:
             tf.add_to_collection(self._scope_name + '_features_' + str(i),
                                  self._features[i])
             tf.add_to_collection(self._scope_name + '_q_' + str(i), self._q[i])
+        for i in range(self.n_approximators):
             tf.add_to_collection(self._scope_name + '_q_acted_' + str(i),
                                  self._q_acted[i])
         tf.add_to_collection(self._scope_name + '_target_q', self._target_q)
@@ -243,10 +247,11 @@ class ConvNet:
         features = list()
         q = list()
         q_acted = list()
-        for i in range(convnet_pars['n_approximators']):
+        for i in range(convnet_pars['output_shape'][0]):
             features.append(tf.get_collection(
                 self._scope_name + '_features_' + str(i))[0])
             q.append(tf.get_collection(self._scope_name + '_q_' + str(i))[0])
+        for i in range(convnet_pars['n_approximators']):
             q_acted.append(tf.get_collection(
                 self._scope_name + '_q_acted_' + str(i))[0])
 
