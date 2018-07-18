@@ -10,18 +10,19 @@ class PVF(TD):
                  VMax=500):
         self._n_approximators = n_approximators
         self.Q = EnsembleTable(self._n_approximators, mdp_info.size)
-        self.quantiles=[k*(100/(self._n_approximators-1)) for k in range(self._n_approximators) ]
-        for i in range(len(self.Q.model)):
-            for j in range(mdp_info.size[0]):
-                for k in range(mdp_info.size[1]):
-                    self.Q.model[i].table[j, k] = self.quantiles[i]
+        self._means=np.zeros(shape=mdp_info.size)
+        quantiles=[k*VMax/(n_approximators-1) for k in range(n_approximators)]
+        mean=np.mean(quantiles)
+        for j in range(mdp_info.size[0]):
+            for k in range(mdp_info.size[1]):
+                #particles=np.sort(np.random.uniform(0,VMax, self._n_approximators))
+                #self._means[j, k]=np.mean(particles)
+                self._means[j, k]=mean
+                for i in range(len(self.Q.model)):
+                    self.Q.model[i].table[j, k] = quantiles[i]
         super(PVF, self).__init__(self.Q, policy, mdp_info,
                                            learning_rate)
-        self._means=np.zeros(shape=mdp_info.size)
-        mean=np.mean(self.quantiles)
-        for i in range(mdp_info.size[0]):
-            for j in range(mdp_info.size[1]):
-                self._means[i, j]=mean
+        
     def episode_start(self):
         return super(PVF, self).episode_start()
     def getMax(self, V):
@@ -35,14 +36,13 @@ class PVF(TD):
 class PVFMaxMeanLearning(PVF):
     
     def _update(self, state, action, reward, next_state, absorbing):
-        means=self._means[next_state, :]
-        best_action=self.getMax(means)
         q_current = np.array([x[state, action] for x in self.Q.model])
-        q_next = np.array([x[state,best_action] for x in self.Q.model])
         q_current=np.sort(q_current)
         alpha=self.alpha(state, action)
         if not absorbing:
-            q_next=np.sort(q_next)
+            means=self._means[next_state, :]
+            best_action=self.getMax(means)
+            q_next=np.sort(np.array([x[next_state,best_action] for x in self.Q.model]))
         else:
             q_next=np.zeros(self._n_approximators)
         target=reward+self.mdp_info.gamma*q_next
@@ -57,7 +57,7 @@ class PVFWeightedLearning(PVF):
     
     def _update(self, state, action, reward, next_state, absorbing):
         alpha=self.alpha(state, action)
-        q_current = np.array([x[state, action] for x in self.Q.model])
+        q_current = np.sort(np.array([x[state, action] for x in self.Q.model]))
         N=len(self.Q.model)
         num_actions=self.Q.model[0].shape[1]
         probs=np.zeros(num_actions)
@@ -84,6 +84,7 @@ class PVFWeightedLearning(PVF):
             for j in range(num_actions):
                 particles=np.array([x[next_state, j] for x in self.Q.model])
                 q_next+=particles*probs[j]
+            q_next=np.sort(q_next)
         else:
             q_next=np.zeros(N)
         target=reward+self.mdp_info.gamma*q_next
