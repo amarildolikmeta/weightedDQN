@@ -78,7 +78,10 @@ def experiment(n_approximators, policy, name, alg_version):
             core.learn(n_steps=evaluation_frequency,
                        n_steps_per_fit=1, quiet=False)
             dataset = collect_dataset.get()
-            scores_train.append(get_stats(dataset))            
+            if name=="Taxi":
+                scores_train.append(get_stats(dataset))
+            else:
+                scores_train.append(compute_scores_Loop(dataset))             
             collect_dataset.clean()
             mdp.reset()
             print('- Evaluation:')
@@ -96,6 +99,26 @@ def get_stats(dataset):
     score = compute_scores(dataset)
     return score
 
+def compute_scores_Loop(dataset, horizon=1000):
+  
+    scores = list()
+
+    score = 0.
+    episode_steps = 0
+    n_episodes = 0
+    for i in range(len(dataset)):
+        score += dataset[i][2]
+        episode_steps += 1
+        if episode_steps==horizon:
+            scores.append(score)
+            score = 0.
+            episode_steps = 0
+            n_episodes += 1
+
+    if len(scores) > 0:
+        return np.min(scores), np.max(scores), np.mean(scores), n_episodes
+    else:
+        return 0, 0, 0, 0
 if __name__ == '__main__':
     n_experiment = 10
     n_approximators = 20
@@ -117,7 +140,7 @@ if __name__ == '__main__':
     tableData={"Algorithm":[""]*num_algs,"Num Experiments":[1.]*num_algs, "Phase Length":[1.]*num_algs,  "Avg Score Phase 1":[1.]*num_algs, "Std Dev Phase 1":[1.]*num_algs ,"Avg Score Phase 2":[1.]*num_algs,"Std Dev Phase 2":[1.]*num_algs}
     count=0
     exponent=0.2
-    envs=['Taxi','NChain-v0','Loop']   
+    envs=['NChain-v0','Loop']   
     for p in [BootPolicy, WeightedPolicy]:
         for env in envs:
             alg_version=policy_name[p]

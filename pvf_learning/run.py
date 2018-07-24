@@ -81,7 +81,10 @@ def experiment(n_approximators, policy, agent_alg, name,exponent, alg_version):
             core.learn(n_steps=evaluation_frequency,
                        n_steps_per_fit=1, quiet=False)
             dataset = collect_dataset.get()
-            scores_train.append(get_stats(dataset))            
+            if name=="Taxi":
+                scores_train.append(get_stats(dataset))
+            else:
+                scores_train.append(compute_scores_Loop(dataset))
             collect_dataset.clean()
             mdp.reset()
             print('- Evaluation:')
@@ -97,8 +100,29 @@ def experiment(n_approximators, policy, agent_alg, name,exponent, alg_version):
 
 def get_stats(dataset):
     score = compute_scores(dataset)
-    
     return score
+
+def compute_scores_Loop(dataset, horizon=1000):
+  
+    scores = list()
+
+    score = 0.
+    episode_steps = 0
+    n_episodes = 0
+    for i in range(len(dataset)):
+        score += dataset[i][2]
+        episode_steps += 1
+        if episode_steps==horizon:
+            scores.append(score)
+            score = 0.
+            episode_steps = 0
+            n_episodes += 1
+
+    if len(scores) > 0:
+        return np.min(scores), np.max(scores), np.mean(scores), n_episodes
+    else:
+        return 0, 0, 0, 0
+
 if __name__ == '__main__':
     n_experiment = 10
     n_approximators = 20
@@ -132,7 +156,7 @@ if __name__ == '__main__':
     count=0
     exponent=0.2
     colors=["#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf"]
-    envs=['Taxi','NChain-v0','Loop']   
+    envs=['NChain-v0','Loop']   
     for p in policies:
         for a in updates:
             for env in envs:
