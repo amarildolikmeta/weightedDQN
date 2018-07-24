@@ -122,7 +122,7 @@ if __name__ == '__main__':
         for env in envs:
             alg_version=policy_name[p]
             out = Parallel(n_jobs=-1)(delayed(experiment)(
-                n_approximators, p,  env, exponent,alg_version) for _ in range(n_experiment))
+                n_approximators, p,  env,alg_version) for _ in range(n_experiment))
             scores_train= [x[0] for x in out]
             scores = [x[1] for x in out]
             train=np.mean(scores_train, axis=0)

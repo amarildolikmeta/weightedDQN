@@ -44,9 +44,10 @@ def experiment( policy, name, alg_version):
     # Policy
     # epsilon = ExponentialDecayParameter(value=1., decay_exp=.5,
     #                                     size=mdp.info.observation_space.size)
-    epsilon = ExponentialDecayParameter(value=1., decay_exp=.5,
+    epsilon_train = ExponentialDecayParameter(value=1., decay_exp=.5,
                                         size=mdp.info.observation_space.size)
-    pi = policy( epsilon=epsilon)
+    epsilon_test=Parameter(0)
+    pi = policy( epsilon=epsilon_train)
 
     # Agent
     learning_rate = ExponentialDecayParameter(value=1., decay_exp=.2,
@@ -64,7 +65,7 @@ def experiment( policy, name, alg_version):
     for n_epoch in range(1, max_steps // evaluation_frequency + 1):
             print('- Learning:')
             # learning step
-            pi.set_eval(False)
+            pi.set_epsilon(epsilon_train)
             core.learn(n_steps=evaluation_frequency,
                        n_steps_per_fit=1, quiet=False)
             dataset = collect_dataset.get()
@@ -73,7 +74,7 @@ def experiment( policy, name, alg_version):
             mdp.reset()
             print('- Evaluation:')
             # evaluation step
-            pi.set_eval(True)
+            pi.set_epsilon(epsilon_test)
             dataset = core.evaluate(n_steps=test_samples,
                                     quiet=False)
             mdp.reset()
