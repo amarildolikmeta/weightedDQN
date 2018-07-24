@@ -99,7 +99,7 @@ def get_stats(dataset):
     score = compute_scores(dataset)
     return score
 
-def compute_scores_Loop(dataset, horizon=1000):
+def compute_scores_Loop(dataset, horizon=100):
   
     scores = list()
 
