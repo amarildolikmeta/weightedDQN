@@ -8,7 +8,7 @@ from mushroom.utils.table import EnsembleTable
 
 class Bootstrapped(TD):
     def __init__(self, policy, mdp_info, learning_rate, n_approximators=10,
-                 mu=0., sigma=1., p=2 / 3., cross_update=False):
+                 mu=0, sigma=1., p=2 / 3., cross_update=False):
         self._n_approximators = n_approximators
         self._mu = mu
         self._sigma = sigma

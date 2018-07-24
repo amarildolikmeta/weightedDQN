@@ -15,7 +15,7 @@ class BootPolicy(TDPolicy):
         self._epsilon = epsilon
         self._evaluation = False
         self._idx = None
-        self.count=0
+
     def draw_action(self, state):
         if not np.random.uniform() < self._epsilon(state):
             if self._evaluation:
@@ -24,16 +24,17 @@ class BootPolicy(TDPolicy):
                     for q in self._approximator.model:
                         q_list.append(q.predict(state))
                 else:
-                    q_list = self._approximator.predict(state).squeeze()
+                    q_list = self._approximator.predict(state)
 
                 max_as, count = np.unique(np.argmax(q_list, axis=1),
                                           return_counts=True)
                 max_a = np.array([max_as[np.random.choice(
                     np.argwhere(count == np.max(count)).ravel())]])
+
                 return max_a
             else:
                 q = self._approximator.predict(state, idx=self._idx)
-                
+
                 max_a = np.argwhere(q == np.max(q)).ravel()
                 if len(max_a) > 1:
                     max_a = np.array([np.random.choice(max_a)])
@@ -75,9 +76,26 @@ class WeightedPolicy(TDPolicy):
                         q_list.append(q.predict(state))
                 else:
                     q_list = self._approximator.predict(state).squeeze()
-
-                means=np.mean(q_list, axis=0)
-                return np.array([np.random.choice(np.where(means==np.max(means))[0])])
+                q=np.array(q_list)
+                num_actions=q.shape[1]
+                probs=np.zeros(num_actions)
+                N=q.shape[0]
+                weights=1/N
+                for i in range(num_actions):
+                    particles=q[:, i]
+                    p=0
+                    for k in range(N):
+                        p2=1
+                        p_k=particles[k]
+                        for j in range(num_actions):
+                            if(j!=i):
+                                particles2=q[:, j]
+                                count=len(particles2[particles2<=p_k])
+                                p3=count*weights
+                                p2*=p3
+                        p+=weights*p2
+                    probs[i]=p
+                return np.array([np.random.choice(np.where(probs==np.max(probs))[0])])
             else:
                 if isinstance(self._approximator.model, list):
                     q_list = list()
@@ -123,9 +141,27 @@ class VPIPolicy(BootPolicy):
                             q_list.append(q.predict(state))
                     else:
                         q_list = self._approximator.predict(state).squeeze()
+                    q=np.array(q_list)
+                    num_actions=q.shape[1]
+                    probs=np.zeros(num_actions)
+                    N=q.shape[0]
+                    weights=1/N
+                    for i in range(num_actions):
+                        particles=q[:, i]
+                        p=0
+                        for k in range(N):
+                            p2=1
+                            p_k=particles[k]
+                            for j in range(num_actions):
+                                if(j!=i):
+                                    particles2=q[:, j]
+                                    count=len(particles2[particles2<=p_k])
+                                    p3=count*weights
+                                    p2*=p3
+                            p+=weights*p2
+                        probs[i]=p
+                    return np.array([np.random.choice(np.where(probs==np.max(probs))[0])])
                     
-                    means=np.mean(q_list, axis=0)
-                    return np.array([np.random.choice(np.where(means==np.max(means))[0])])
                 else:
                     if isinstance(self._approximator.model, list):
                         q_list = list()

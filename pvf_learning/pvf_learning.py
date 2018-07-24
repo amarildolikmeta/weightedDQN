@@ -73,10 +73,8 @@ class PVFWeightedLearning(PVF):
                         for j in range(num_actions):
                             if(j!=i):
                                 particles2= np.array([x[next_state, j] for x in self.Q.model])
-                                p3=0
-                                for l in range(N):
-                                    if particles2[l]<=p_k:
-                                        p3+=weights
+                                count=len(particles2[particles2<=p_k])
+                                p3=count*weights
                                 p2*=p3
                         p+=weights*p2
                     probs[i]=p
