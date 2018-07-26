@@ -15,7 +15,8 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from envs.loop import  generate_loop
 from envs.chain import  generate_chain
-
+from envs.river_swim import  generate_river
+from envs.six_arms import  generate_arms
 import gym
 import argparse
 
@@ -44,6 +45,18 @@ def experiment(n_approximators, policy, agent_alg, name,exponent, alg_version):
     elif name=="Loop":
         mdp=generate_loop(horizon=1000)
         vmax=60
+        max_steps=5000
+        evaluation_frequency=100
+        test_samples=10000
+    elif name=="SixArms":
+        mdp=generate_arms(horizon=1000)
+        vmax=100000
+        max_steps=25000
+        evaluation_frequency=500
+        test_samples=10000
+    elif name=="RiverSwim":
+        mdp=generate_river(horizon=1000)
+        vmax=100000
         max_steps=5000
         evaluation_frequency=100
         test_samples=10000
@@ -83,6 +96,8 @@ def experiment(n_approximators, policy, agent_alg, name,exponent, alg_version):
             dataset = collect_dataset.get()
             if name=="Taxi":
                 scores_train.append(get_stats(dataset))
+            elif name in ["SixArms"]:
+                scores_train.append(compute_scores_Loop(dataset, horizon=500))
             else:
                 scores_train.append(compute_scores_Loop(dataset))
             collect_dataset.clean()
@@ -132,8 +147,11 @@ if __name__ == '__main__':
     arg_game.add_argument("--name",
                           choices=['Taxi',
                                   'NChain-v0',
-                                  'Loop'],
-                         default='Taxi',
+                                  'Loop',
+                                  'SixArms', 
+                                  'RiverSwim', 
+                                  ''],
+                         default='',
                           help='name of the environment to test in')
     arg_game.add_argument("--evaluation-frequency", type=int, default=1000,
                          help='Number of learning step before each evaluation.'
@@ -156,7 +174,10 @@ if __name__ == '__main__':
     count=0
     exponent=0.2
     colors=["#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf"]
-    envs=['NChain-v0','Loop']   
+    if args.name !='':
+        envs=[args.name]
+    else:
+        envs=['NChain-v0','Loop', "Taxi", "SixArms", "RiverSwim"]   
     for p in policies:
         for a in updates:
             for env in envs:

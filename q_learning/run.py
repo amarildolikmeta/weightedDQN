@@ -17,6 +17,8 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from envs.loop import  generate_loop
 from envs.chain import  generate_chain
+from envs.river_swim import  generate_river
+from envs.six_arms import  generate_arms
 import argparse
 
 def experiment( policy, name, alg_version):
@@ -39,6 +41,16 @@ def experiment( policy, name, alg_version):
         max_steps=5000
         evaluation_frequency=100
         test_samples=10000
+    elif name=="SixArms":
+        mdp=generate_arms(horizon=1000)
+        max_steps=25000
+        evaluation_frequency=500
+        test_samples=10000
+    elif name=="RiverSwim":
+        mdp=generate_river(horizon=1000)
+        max_steps=5000
+        evaluation_frequency=100
+        test_samples=10000    
     else:
         raise NotImplementedError
     # Policy
@@ -71,6 +83,8 @@ def experiment( policy, name, alg_version):
             dataset = collect_dataset.get()
             if name=="Taxi":
                 scores_train.append(get_stats(dataset))
+            elif name in ["SixArms"]:
+                scores_train.append(compute_scores_Loop(dataset, horizon=500))        
             else:
                 scores_train.append(compute_scores_Loop(dataset))        
             collect_dataset.clean()
@@ -117,8 +131,11 @@ if __name__ == '__main__':
     arg_game.add_argument("--name",
                           choices=['Taxi',
                                   'NChain-v0',
-                                  'Loop'],
-                         default='Taxi',
+                                  'Loop', 
+                                  'SixArms', 
+                                  'RiverSwim', 
+                                  ''],
+                         default='',
                           help='name of the environment to test in')
 
     args = parser.parse_args()
@@ -128,7 +145,10 @@ if __name__ == '__main__':
     num_algs=len(policies)
     tableData={"Algorithm":[""]*num_algs,"Num Experiments":[1.]*num_algs, "Phase Length":[1.]*num_algs,  "Avg Score Phase 1":[1.]*num_algs, "Std Dev Phase 1":[1.]*num_algs ,"Avg Score Phase 2":[1.]*num_algs,"Std Dev Phase 2":[1.]*num_algs}
     count=0
-    envs=['NChain-v0','Loop']
+    if args.name !='':
+        envs=[args.name]
+    else:
+        envs=['NChain-v0','Loop', "Taxi", "SixArms", "RiverSwim"]   
     for p in policies:
         for env in envs:
             alg_version=policy_name[p]
