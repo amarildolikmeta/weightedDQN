@@ -20,12 +20,12 @@ from envs.six_arms import  generate_arms
 import gym
 import argparse
 
-from pvf_learning import PVFMaxMeanLearning, PVFWeightedLearning
+from pvf_learning import ParticleQLearning, ParticleDoubleQLearning
 sys.path.append('..')
 from policy import VPIPolicy, WeightedPolicy
 
 
-def experiment(n_approximators, policy, agent_alg, name,exponent, alg_version):
+def experiment(n_approximators, policy, update_type, name,exponent, alg_version, double):
     np.random.seed()
    
     
@@ -47,13 +47,13 @@ def experiment(n_approximators, policy, agent_alg, name,exponent, alg_version):
         vmax=60
         max_steps=5000
         evaluation_frequency=100
-        test_samples=10000
+        test_samples=1000
     elif name=="SixArms":
         mdp=generate_arms(horizon=1000)
-        vmax=100000
+        vmax=10e10
         max_steps=25000
         evaluation_frequency=500
-        test_samples=10000
+        test_samples=1000
     elif name=="RiverSwim":
         mdp=generate_river(horizon=1000)
         vmax=100000
@@ -75,11 +75,14 @@ def experiment(n_approximators, policy, agent_alg, name,exponent, alg_version):
                                               size=mdp.info.size)
     algorithm_params = dict(
                 learning_rate=learning_rate, 
-                VMax=vmax, 
-                n_approximators=n_approximators
+                q_max=vmax, 
+                n_approximators=n_approximators, 
+                update_type=update_type
                 )
-    agent = agent_alg(pi, mdp.info, **algorithm_params)
-
+    if double:
+        agent = ParticleDoubleQLearning(pi, mdp.info, **algorithm_params)
+    else:
+        agent = ParticleQLearning(pi, mdp.info, **algorithm_params)
     # Algorithm
     collect_dataset = CollectDataset()
     callbacks = [collect_dataset]
@@ -160,20 +163,22 @@ if __name__ == '__main__':
                          help='Number of steps for each evaluation.')
     arg_game.add_argument("--max-steps", type=int, default=50000,
                          help='Total number of learning steps.')
+    arg_game.add_argument("--double", action='store_true')
     args = parser.parse_args()
     #env=args.name
     exponent=0.1
     delta=0.1
     max=1
     policy_name = {VPIPolicy: 'VPIPolicy', WeightedPolicy: 'WeightedPolicy'}
-    update_rule={PVFMaxMeanLearning:"MaxMean", PVFWeightedLearning:"WeightedMax"}
-    policies=[VPIPolicy, WeightedPolicy]#
-    updates=[PVFMaxMeanLearning, PVFWeightedLearning]
+    update_rule={"mean":"MaxMean", "weighted":"WeightedMax"}
+    policies=[VPIPolicy, WeightedPolicy]
+    updates=["mean", "weighted"]
     num_algs=len(policies)*len(updates) 
     tableData={"Algorithm":[""]*num_algs,"Num Experiments":[1.]*num_algs, "Phase Length":[1.]*num_algs,  "Avg Score Phase 1":[1.]*num_algs, "Std Dev Phase 1":[1.]*num_algs ,"Avg Score Phase 2":[1.]*num_algs,"Std Dev Phase 2":[1.]*num_algs}
     count=0
-    exponent=0.2
+    exponent=0.5
     colors=["#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf"]
+    double=args.double
     if args.name !='':
         envs=[args.name]
     else:
@@ -183,27 +188,16 @@ if __name__ == '__main__':
             for env in envs:
                 alg_version=policy_name[p]+"_"+update_rule[a]
                 out = Parallel(n_jobs=-1)(delayed(experiment)(
-                    n_approximators, p, a, env, exponent,alg_version) for _ in range(n_experiment))
+                    n_approximators, p, a, env, exponent,alg_version, double) for _ in range(n_experiment))
 
                 scores_train= [x[0] for x in out]
                 scores = [x[1] for x in out]
                 train=np.mean(scores_train, axis=0)
                 test=np.mean(scores, axis=0)
-                np.save(env + '/'+alg_version+'_train_scores.npy', train)
-                np.save(env + '/'+alg_version+'_eval_scores.npy', test)
-
-            '''scores = [x for x in out]
-            #scores_test = [x[1] for x in out]
-            tableData["Avg Score Phase 1"] [count], tableData["Std Dev Phase 1"][count]=np.mean(np.sum(scores, axis=1)), np.std(np.sum(scores, axis=1))
-            tableData["Avg Score Phase 2"] [count], tableData["Std Dev Phase 2"][count]=np.mean(np.sum(scores_test, axis=1)), np.std(np.sum(scores_test, axis=1))
-            tableData["Num Experiments"][count]=np.array(scores).shape[0]
-            tableData["Phase Length"][count]=np.array(scores).shape[1]
-            tableData["Algorithm"][count]=policy_name[p]+"_"+update_rule[a]
-            y=np.mean(np.cumsum(scores, axis=1), axis=0)
-            y_test=np.mean(np.cumsum(scores_test, axis=1), axis=0)
-            np.save(env+"/"+policy_name[p]+"_"+update_rule[a]+".npy", y)
-            np.save(env+"/test_"+policy_name[p]+"_"+update_rule[a]+".npy", y_test)
-            count+=1
-    df=pd.DataFrame(tableData)
-    print (tabulate(df, headers='keys', tablefmt='psql'))
-    df.to_csv(env+"/scores.csv", sep=',')'''
+                if double:
+                    d="Double_"
+                else:
+                    d=""
+                np.save(env + '/'+d+alg_version+'_train_scores.npy', train)
+                np.save(env + '/'+d+alg_version+'_eval_scores.npy', test)
+    

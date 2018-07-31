@@ -53,8 +53,8 @@ def experiment(n_approximators, policy, name, alg_version):
         max_steps=25000
         evaluation_frequency=500
         test_samples=10000
-        mu=100000
-        sigma=1000
+        mu=10000000
+        sigma=10000
     elif name=="RiverSwim":
         mdp=generate_river(horizon=1000)
         max_steps=5000
