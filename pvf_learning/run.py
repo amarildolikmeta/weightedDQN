@@ -47,18 +47,18 @@ def experiment(n_approximators, policy, update_type, name,exponent, alg_version,
         vmax=60
         max_steps=5000
         evaluation_frequency=100
-        test_samples=1000
+        test_samples=10000
     elif name=="SixArms":
         mdp=generate_arms(horizon=1000)
         vmax=10e10
         max_steps=25000
         evaluation_frequency=500
-        test_samples=1000
+        test_samples=10000
     elif name=="RiverSwim":
         mdp=generate_river(horizon=1000)
         vmax=100000
-        max_steps=5000
-        evaluation_frequency=100
+        max_steps=25000
+        evaluation_frequency=500
         test_samples=10000
     else:
         raise NotImplementedError
